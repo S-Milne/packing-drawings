@@ -1,6 +1,8 @@
 
 
-use evdev::{Device, EventType};
+use std::f32::consts::E;
+
+use evdev::{Device, EventSummary, EventType};
 use tokio::signal;
 use tokio_util::sync::CancellationToken;
 
@@ -65,21 +67,12 @@ async fn print_keys(token: CancellationToken) {
         };
         
 
-        let event_type = event.event_type();
-
-        match event_type {
-            EventType::KEY => {
-                let pressed = match event.value() {
-                    0 => "Released",
-                    1 => "Pressed",
-                    _ => "Not a key"
-                };
-                println!("Code: {:?} {}", event.code(), pressed);
+        match event.destructure() {
+            EventSummary::Key(event, code, value) => {
+                println!("{:?} {:?} {}", event, code, value)
             }
-            _ => {
-
-            }
-        }
+            _ => {}
+        };
 
         
 
