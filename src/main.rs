@@ -69,7 +69,9 @@ async fn print_keys(token: CancellationToken) {
 
         match event.destructure() {
             EventSummary::Key(event, code, value) => {
-                println!("{:?} {:?} {}", event, code, value)
+                if value == 1 {
+                    println!("{:?}", code)
+                }
             }
             _ => {}
         };
