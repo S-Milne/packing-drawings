@@ -1,7 +1,7 @@
-use std::time::Duration;
+
 
 use evdev::Device;
-use tokio::{signal, time::sleep};
+use tokio::signal;
 use tokio_util::sync::CancellationToken;
 
 #[tokio::main]
@@ -45,24 +45,31 @@ async fn print_keys(token: CancellationToken) {
         }
     };
 
+    let mut events = match device_kbd.into_event_stream() {
+        Ok(e) => e,
+        Err(err) => {
+            eprintln!("device_kbd: {}", err);
+            return;
+        },
+    };
+
     loop {
-        let kbd_keys = match device_kbd.get_key_state() {
-            Ok(k) => k,
+
+        let event = match events.next_event().await {
+            Ok(e) => e,
             Err(err) => {
-                eprintln!("device_kbd: {}", err);
-                let _ = device_kbd.ungrab();
-                return;
-            }
+                eprintln!("{}", err);
+                continue;
+            },
         };
+        
+        println!("{:?}", event);
 
-        println!("device_kbd: {:?}", kbd_keys);
-
-        sleep(Duration::from_secs(1)).await;
         match token.is_cancelled() {
             true => break,
             false => {}
         }
     }
 
-    let _ = device_kbd.ungrab();
+    let _ = events.device_mut().ungrab();
 }
