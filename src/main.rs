@@ -6,7 +6,7 @@ use tokio_util::sync::CancellationToken;
 
 #[tokio::main]
 async fn main() -> Result<(), tokio::io::Error> {
-    println!("Hello, world!");
+    println!("Listening for keyboard input...");
 
     let token = CancellationToken::new();
 
@@ -28,7 +28,7 @@ async fn main() -> Result<(), tokio::io::Error> {
 
 async fn print_keys(token: CancellationToken) {
     let device_id_kbd = "/dev/input/by-id/usb-SIGMACHIP_USB_Keyboard-event-kbd";
-
+    println!("Listening to device: {}", device_id_kbd);
     let mut device_kbd = match Device::open(device_id_kbd) {
         Ok(d) => d,
         Err(err) => {
@@ -59,7 +59,8 @@ async fn print_keys(token: CancellationToken) {
             Ok(e) => e,
             Err(err) => {
                 eprintln!("{}", err);
-                continue;
+                let _ = events.device_mut().ungrab();
+                return;
             },
         };
         
