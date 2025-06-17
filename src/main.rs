@@ -9,7 +9,10 @@ fn main() {
 fn print_keys() {
     let mut device = match Device::open("/dev/packingkeyboard") {
         Ok(d) => d,
-        Err(_) => return,
+        Err(err) => {
+            eprintln!("{}", err);
+            return;
+        },
     };
     
 
@@ -17,7 +20,8 @@ fn print_keys() {
 
     let keys = match device.get_key_state() {
         Ok(k) => k,
-        Err(_) => {
+        Err(err) => {
+            eprintln!("{}", err);
             let _ = device.ungrab();
             return;
         },
