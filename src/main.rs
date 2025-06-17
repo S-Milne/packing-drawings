@@ -24,9 +24,9 @@ async fn main() -> Result<(), tokio::io::Error> {
     match signal::ctrl_c().await {
         Ok(_) => {
             token.cancel();
-            print_thread.await?;
-            media_thread.await?;
-            key_thread.await?;
+            key_thread.abort();
+            media_thread.abort();
+            print_thread.abort();
         }
         Err(err) => {
             eprintln!("{}", err);
