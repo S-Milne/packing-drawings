@@ -28,10 +28,17 @@ async fn main() -> Result<(), tokio::io::Error> {
 }
 
 async fn print_keys(token: CancellationToken) {
-    let device_id = "/dev/input/by-id/usb-SIGMACHIP_USB_Keyboard-event-kbd";
-    #[allow(unused)]
-    let device_redirect = "/dev/packingkeyboard";
-    let mut device = match Device::open(device_id) {
+    let device_id_kbd = "/dev/input/by-id/usb-SIGMACHIP_USB_Keyboard-event-kbd";
+    let device_id_if = "/dev/input/by-id/usb-SIGMACHIP_USB_Keyboard-event-if01";
+
+    let mut device_kbd = match Device::open(device_id_kbd) {
+        Ok(d) => d,
+        Err(err) => {
+            eprintln!("{}", err);
+            return;
+        }
+    };
+        let mut device_if = match Device::open(device_id_if) {
         Ok(d) => d,
         Err(err) => {
             eprintln!("{}", err);
@@ -39,18 +46,42 @@ async fn print_keys(token: CancellationToken) {
         }
     };
 
-    let _ = device.grab();
+    match device_kbd.grab() {
+        Ok(_) => {},
+        Err(err) => {
+            eprintln!("device_kbd: {}", err);
+            return;
+        },
+    };
+
+        match device_if.grab() {
+        Ok(_) => {},
+        Err(err) => {
+            eprintln!("device_if: {}", err);
+            return;
+        },
+    };
 
     loop {
-        let keys = match device.get_key_state() {
+        let kbd_keys = match device_kbd.get_key_state() {
             Ok(k) => k,
             Err(err) => {
-                eprintln!("{}", err);
-                let _ = device.ungrab();
+                eprintln!("device_kbd: {}", err);
+                let _ = device_kbd.ungrab();
                 return;
             }
         };
-        println!("{:#?}", keys);
+
+        let if_keys = match device_if.get_key_state() {
+            Ok(k) => k,
+            Err(err) => {
+                eprintln!("device_if: {}", err);
+                let _ = device_if.ungrab();
+                return;
+            }
+        };
+        println!("device_kbd: {:?}", kbd_keys);
+        println!("device_if: {:?}", if_keys);
         sleep(Duration::from_secs(1)).await;
         match token.is_cancelled() {
             true => break,
@@ -58,5 +89,6 @@ async fn print_keys(token: CancellationToken) {
         }
     }
 
-    let _ = device.ungrab();
+    let _ = device_kbd.ungrab();
+    let _ = device_if.ungrab();
 }
