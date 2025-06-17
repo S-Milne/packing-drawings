@@ -1,6 +1,6 @@
 
 
-use evdev::Device;
+use evdev::{Device, EventType};
 use tokio::signal;
 use tokio_util::sync::CancellationToken;
 
@@ -64,7 +64,24 @@ async fn print_keys(token: CancellationToken) {
             },
         };
         
-        println!("{:?}", event);
+
+        let event_type = event.event_type();
+
+        match event_type {
+            EventType::KEY => {
+                let pressed = match event.value() {
+                    0 => "Released",
+                    1 => "Pressed",
+                    _ => "Not a key"
+                };
+                println!("Code: {:?} {}", event.code(), pressed);
+            }
+            _ => {
+
+            }
+        }
+
+        
 
         match token.is_cancelled() {
             true => break,
