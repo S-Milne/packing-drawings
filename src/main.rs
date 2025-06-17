@@ -7,7 +7,7 @@ fn main() {
 
 
 fn print_keys() {
-    let device_id = "usb-SIGMACHIP_USB_Keyboard-event-kbd";
+    let device_id = "/dev/input/by-id/usb-SIGMACHIP_USB_Keyboard-event-kbd";
     #[allow(unused)]
     let device_redirect = "/dev/packingkeyboard";
     let mut device = match Device::open(device_id) {
