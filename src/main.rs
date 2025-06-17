@@ -1,6 +1,6 @@
-use std::f32::consts::E;
 
-use evdev::{Device, EventSummary, EventType, KeyCode};
+
+use evdev::{Device, EventSummary, KeyCode};
 use tokio::signal;
 use tokio_util::sync::CancellationToken;
 
@@ -64,7 +64,7 @@ async fn print_keys(token: CancellationToken) {
         };
 
         match event.destructure() {
-            EventSummary::Key(event, code, value) => {
+            EventSummary::Key(_, code, value) => {
                 if code != KeyCode::KEY_NUMLOCK {
                     if value == 1 {
                         println!("{:?}", code)
